@@ -16,7 +16,7 @@ git clone https://github.com/aglorice/Raincourse.git
 
 #### 2.进入目录
 ```bash
-cd new_xxt
+cd Raincourse
 ```
 #### 3.安装依赖
 ```bash
