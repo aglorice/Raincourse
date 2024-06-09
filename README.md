@@ -16,7 +16,7 @@ git clone https://github.com/aglorice/Raincourse.git
 
 #### 2.进入目录
 ```bash
-cd new_xxt
+cd Raincourse
 ```
 #### 3.安装依赖
 ```bash
@@ -37,7 +37,6 @@ python main.py
 * [x] 支持选择题，填空题，多选题等
 * [x] 查询所有课程的未做作业
 * [x] 查看作业的成绩以及完成状态
-* [x] 查看作业是否可以重做
 * [x] 实现微信扫码登录
 
 ## 2.使用方法
