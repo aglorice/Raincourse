@@ -5,6 +5,7 @@ from functools import cache
 import requests
 
 from utils.ws_login import WebSocketClient
+from utils.ws_ppt import WebSocketClient_PPT
 
 
 class RainAPI:
@@ -182,7 +183,7 @@ class RainAPI:
         }
 
         response = self.sees.get(url, headers=headers, allow_redirects=True)
-        print(response.url)
+
         if response.status_code == 200:
             self.console.log("[green]初始化测试题成功[/green]")
         else:
@@ -219,3 +220,89 @@ class RainAPI:
             self.console.log("[green]获取测试题token成功[/green]")
         else:
             self.console.log("[red]获取测试题token失败[/red]")
+
+    def view_ppt(self, class_id, user_id, page_count):
+
+        self.console.log("[green]开始浏览ppt[/green]")
+        uri = "wss://www.yuketang.cn/ws/"
+        client = WebSocketClient_PPT(uri, self.get_session_headers(class_id), self.console, class_id, user_id,
+                                     page_count)
+        try:
+            client.start()
+        except KeyboardInterrupt:
+            self.console.log("[red]用户中断[/red]")
+            client.stop()
+
+    def get_ppt(self, class_id):
+        url = f"https://www.yuketang.cn/v2/api/web/logs/learn/{class_id}?actype=15&page=0&offset=200&sort=-1"
+        headers = {
+            "User-Agent": self.ua,
+        }
+        response = self.sees.get(url, headers=headers)
+        return response.json()
+
+    def get_session_headers(self, class_id):
+        headers = {}
+        # Copy the session headers
+        headers.update(self.sees.headers)
+        headers['User-Agent'] = self.ua
+        headers['X-Csrftoken'] = self.sees.cookies.get("csrftoken")
+
+        # Add the cookies to the headers
+        cookies = self.sees.cookies.get_dict()
+        cookie_header = '; '.join([f"{name}={value}" for name, value in cookies.items()])
+        cookie_header += f"; classroomId=;{class_id}"
+        if cookie_header:
+            headers['Cookie'] = cookie_header
+
+        return [f"{name}: {value}" for name, value in headers.items()]
+
+    def get_ppt_questions_answer(self, class_id, ppt_id):
+
+        url = f"https://www.yuketang.cn/v2/api/web/cards/detlist/{ppt_id}?classroom_id={class_id}"
+        headers = {
+            "User-Agent": self.ua,
+        }
+        response = self.sees.get(url, headers=headers)
+        return response.json()
+
+    def post_ppt_answer(self, class_id, answer_id, answer_content):
+        url = "https://www.yuketang.cn/v2/api/web/cards/problem_result"
+        headers = {
+            "User-Agent": self.ua,
+            "X-Csrftoken": self.sees.cookies.get("csrftoken"),
+            "Sec-Ch-Ua": "\"Microsoft Edge\";v=\"125\", \"Chromium\";v=\"125\", \"Not.A/Brand\";v=\"24\"",
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Cookie": f"classroom_id={class_id};classroomId={class_id};sessionid={self.sees.cookies.get('sessionid')}",
+            "Sec-Ch-Ua-Platform": "\"Windows\"",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "X-Client": "web",
+            "Xtbz": "ykt",
+            "Classroom-Id": str(class_id),
+            "Content-Type": "application/json;charset=UTF-8",
+            "Cache-Control": "no-cache",
+            "Origin": "https://www.yuketang.cn",
+            "Pragma": "no-cache"
+        }
+
+        data = {
+            "cards_problem_id": answer_id,
+            "classroom_id": str(class_id),
+            "duration": 12,
+            "result": answer_content,
+        }
+
+        response = self.sees.post(url, headers=headers, data=json.dumps(data))
+        return response.json()
+
+
+    def check_ppt_answer(self, class_id):
+        # 加了这个请求就能100%
+        url = f"https://www.yuketang.cn/v2/api/web/classrooms_role?classroom_id={class_id}"
+        headers = {
+            "User-Agent": self.ua,
+        }
+        response = self.sees.get(url, headers=headers)
+        return response.json()
