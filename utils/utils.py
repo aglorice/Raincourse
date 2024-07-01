@@ -21,13 +21,10 @@ def dateToJsonFile(answer: list, info: dict) -> None:
         f_.write(json_data)
 
 
-def jsonFileToDate(exam_id) -> dict:
+def jsonFileToDate(file_name) -> dict:
     path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    if "json" in exam_id:
-        _exam_id = exam_id
-    else:
-        _exam_id = exam_id + ".json"
-    file = os.path.join(path, "answer", f"{_exam_id}")
+
+    file = os.path.join(path, "answer", f"{file_name}")
     with open(file, 'r', encoding="utf-8") as f_:
         json_data = dict(json.loads(f_.read()))
     return json_data
@@ -39,7 +36,7 @@ def is_exist_answer_file(work_file_name: str) -> bool:
     path = os.path.join(dir_path, "answer")
     for root, dirs, files in os.walk(path):
         answer_files.append(files)
-    if work_file_name+".json" in answer_files[0]:
+    if work_file_name in answer_files[0]:
         return True
     else:
         return False
