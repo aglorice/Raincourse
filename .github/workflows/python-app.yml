@@ -44,7 +44,7 @@ jobs:
           pyinstaller --noconfirm --onedir --console --name "RainCourse" --add-data "LICENSE;." --add-data "README.md;." --add-data "config.py;."  --add-data "answer;answer/"  "main.py"
       - name: output to zip
         run: |
-          7z a -tzip RainCourse_For_${{ runner.os }}_x64.zip ./dist/xxt/*
+          7z a -tzip RainCourse_For_${{ runner.os }}_x64.zip ./dist/RainCourse/*
 
       - name: Create Release
         id: create_release
