@@ -73,7 +73,7 @@ class RainAPI:
         response = self.sees.get(url, headers=headers)
         return response.json()
 
-    def get_test(self, course_id):
+    def get_work(self, course_id):
         """
         获取课程测试题
         :return:
