@@ -2,10 +2,12 @@ from rich.console import Console
 
 from api.api import RainAPI
 from logic import select_menu
+from utils.ui import logo
 
 console = Console(width=120, log_time_format="[%Y-%m-%d %H:%M:%S.%f]")
 # 按装订区域中的绿色按钮以运行脚本。
 if __name__ == '__main__':
+    logo(console)
     try:
         rain = RainAPI(console=console)
         while True:

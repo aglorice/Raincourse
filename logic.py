@@ -3,6 +3,7 @@ import time
 from rich.console import Console
 
 from api.api import RainAPI
+from config import PPT_DURATION_SPAN
 from utils.exam import do_work
 from utils.ui import show_menu, show_course, show_works, show_all_answer_file, show_ppt
 
@@ -96,34 +97,41 @@ def select_menu(console: Console, rain: RainAPI) -> None:
             user_info = rain.get_user_info()
             console.log(user_info)
 
-            for ppt in res['data']['activities']:
-                if not is_exist_answer_file(ppt['courseware_id']+".json"):
-                    flag = console.input(f"[red]答案文件不存在 {ppt['title']},是否从当前账号获取答案并保存到文件中 {ppt['title']},确定请输入任意键，退出请输入q: [red]")
+            for index,ppt in enumerate(res['data']['activities']):
+                if not is_exist_answer_file(ppt['courseware_id'] + ".json"):
+                    flag = console.input(
+                        f"[red]答案文件不存在 {ppt['title']},是否从当前账号获取答案并保存到文件中 {ppt['title']},确定请输入任意键，退出请输入q: [red]")
                     if flag == "q":
                         return
                     ppt_questions = rain.get_ppt_questions_answer(course_id, ppt['courseware_id'])
-                    dateToJsonFile(ppt_questions, {"exam_id": ppt['courseware_id'], "exam_name":  ppt['title'],"exam_type": "课件试题"})
+                    dateToJsonFile(ppt_questions, {"exam_id": ppt['courseware_id'], "exam_name": ppt['title'],
+                                                   "exam_type": "课件试题"})
                     console.log(f"保存答案成功：/answer/ppt{['courseware_id']}.json")
                     continue
                 console.log(f"答案文件存在 {ppt['title']}", style="bold green")
-                ppt_questions = jsonFileToDate(f"{ppt['courseware_id']}")
+                ppt_questions_answer = jsonFileToDate(f"{ppt['courseware_id']}.json")
 
-                for question in ppt_questions['answer']['data']['problem_results']:
+                for question in ppt_questions_answer['answer']['data']['problem_results']:
                     # 这里只做了选择和填空的适配
                     console.log(f"开始做题。。", style="bold green")
                     result = question['answer']
+                    # 选择题
                     if ";" in question['answer']:
                         # 将字符串分割成单独的信号
                         item = question['answer'].split(";")
                         # 为每个信号分配一个唯一的编号
                         result = {index + 1: signal for index, signal in enumerate(item)}
+                    # 填空题
 
                     res = rain.post_ppt_answer(course_id, question['id'], result)
-                    console.log(f"提交答案成功:{res}", style="bold green")
+                    if res['errcode'] != 0:
+                        console.log(f"提交答案失败: {res['errmsg']}（这里只做了选择题，填空题没做😶‍🌫️）", style="bold red")
+                        continue
+                    console.log(f"提交答案成功: Answer:{res['data']['answer']} Result:{res['data']['correct']}, Score:{res['data']['score']}", style="bold green")
 
                 console.log(f"开始浏览ppt: {ppt['title']}", style="bold green")
                 rain.view_ppt(ppt['courseware_id'], user_info['data'][0]["user_id"], ppt['count'])
-                time.sleep(1)
+                time.sleep(PPT_DURATION_SPAN)
 
         elif choose == "7":
             return

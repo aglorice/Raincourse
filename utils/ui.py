@@ -5,9 +5,13 @@ from rich.console import Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-
+from config import __VERSION__
 from utils.schema import WorkStatus
 from utils.utils import jsonFileToDate
+
+
+def logo(console: Console) -> None:
+    console.print(f"雨课堂自动答题（刷课）工具 ,version = {__VERSION__}", style="bold green")
 
 
 def show_menu(console: Console) -> None:
